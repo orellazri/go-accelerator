@@ -12,9 +12,3 @@ $ ./go-accelerator [-t] url
 ```
 
 By default, the numbers of threads is set according to your CPU.
-
-## TODO
-
-- Progress bar
-- File name recognition / choice
-- More choices

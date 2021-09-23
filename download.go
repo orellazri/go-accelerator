@@ -38,16 +38,20 @@ func (d Download) DownloadSection(num int, start int, end int) error {
 		return err
 	}
 	return nil
-	// time.Sleep(1 * time.Second)
-	// return nil
 }
 
 func (d Download) MergeSections() error {
-	outputFile, err := os.OpenFile("output", os.O_CREATE|os.O_WRONLY|os.O_APPEND|os.O_TRUNC, os.ModePerm)
+	// Get output file name from url
+	outputFilename := d.url[strings.LastIndex(d.url, "/")+1:]
+
+	// Create output file
+	outputFile, err := os.OpenFile(outputFilename, os.O_CREATE|os.O_WRONLY|os.O_APPEND|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}
 	defer outputFile.Close()
+
+	// Merge section files
 	for i := 0; i < d.threads; i++ {
 		b, err := ioutil.ReadFile(fmt.Sprintf("section-%d.tmp", i))
 		if err != nil {
@@ -69,7 +73,7 @@ func (d Download) MergeSections() error {
 
 func (d Download) Go() error {
 	// Make a request to get the size of the file in bytes
-	fmt.Print("Collecting information...\n\n")
+	fmt.Println("Collecting information...")
 	req, err := http.NewRequest("GET", d.url, nil)
 	req.Header.Set("User-Agent", "Go Accelerator")
 	req.Header.Set("Range", "bytes=1-")
@@ -98,7 +102,7 @@ func (d Download) Go() error {
 	fmt.Println("Downloading...")
 	var progressWidth = 60
 	var progress = 0
-	fmt.Printf("[>%s] %dMB", strings.Repeat(" ", progressWidth), sizeInMB)
+	fmt.Printf("[>%s] 0/%dMB", strings.Repeat(" ", progressWidth), sizeInMB)
 
 	var wg sync.WaitGroup
 	var progressMutex sync.Mutex
@@ -135,11 +139,13 @@ func (d Download) Go() error {
 
 	wg.Wait()
 
-	fmt.Print("\n\n")
+	fmt.Println()
 
 	// Merge sections
 	fmt.Println("Merging sections...")
 	d.MergeSections()
+
+	fmt.Println("Done.")
 
 	return nil
 }

@@ -6,6 +6,14 @@ Multithreaded download accelerator made in Go.
 
 ## Usage
 
+Build an executable with:
+
+```console
+go build
+```
+
+Run the executable:
+
 ```console
 $ ./go-accelerator [-t] url
 

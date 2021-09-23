@@ -43,6 +43,32 @@ func (d Download) DownloadSection(num int, start int, end int) error {
 	return nil
 }
 
+func (d Download) MergeSections() error {
+	outputFile, err := os.OpenFile("output", os.O_CREATE|os.O_WRONLY|os.O_APPEND|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer outputFile.Close()
+	for i := 0; i < d.threads; i++ {
+		fmt.Printf("Merging section number %d...\n", i)
+		b, err := ioutil.ReadFile(fmt.Sprintf("section-%d.tmp", i))
+		if err != nil {
+			return err
+		}
+		n, err := outputFile.Write(b)
+		if err != nil {
+			return err
+		}
+		if n != len(b) {
+			return err
+		}
+
+		os.Remove(fmt.Sprintf("section-%d.tmp", i))
+	}
+
+	return nil
+}
+
 func (d Download) Go() error {
 	// Make a request to get the size of the file in bytes
 	fmt.Println("Collecting information...")
@@ -100,27 +126,7 @@ func (d Download) Go() error {
 	wg.Wait()
 
 	// Merge sections
-	outputFile, err := os.OpenFile("output", os.O_CREATE|os.O_WRONLY|os.O_APPEND|os.O_TRUNC, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	defer outputFile.Close()
-	for i := 0; i < d.threads; i++ {
-		fmt.Printf("Merging section number %d...\n", i)
-		b, err := ioutil.ReadFile(fmt.Sprintf("section-%d.tmp", i))
-		if err != nil {
-			return err
-		}
-		n, err := outputFile.Write(b)
-		if err != nil {
-			return err
-		}
-		if n != len(b) {
-			return err
-		}
-
-		os.Remove(fmt.Sprintf("section-%d.tmp", i))
-	}
+	d.MergeSections()
 
 	return nil
 }

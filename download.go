@@ -69,7 +69,7 @@ func (d Download) MergeSections() error {
 
 func (d Download) Go() error {
 	// Make a request to get the size of the file in bytes
-	fmt.Println("Collecting information...")
+	fmt.Print("Collecting information...\n\n")
 	req, err := http.NewRequest("GET", d.url, nil)
 	req.Header.Set("User-Agent", "Go Accelerator")
 	req.Header.Set("Range", "bytes=1-")
@@ -89,7 +89,7 @@ func (d Download) Go() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("File size is: %dMB\n", sizeInBytes/1e+6)
+	sizeInMB := sizeInBytes / 1e+6
 
 	// Download the file
 	sectionSize := sizeInBytes / d.threads
@@ -98,7 +98,7 @@ func (d Download) Go() error {
 	fmt.Println("Downloading...")
 	var progressWidth = 60
 	var progress = 0
-	fmt.Printf("[>%s] %dMB", strings.Repeat(" ", progressWidth), sizeInBytes/1e+6)
+	fmt.Printf("[>%s] %dMB", strings.Repeat(" ", progressWidth), sizeInMB)
 
 	var wg sync.WaitGroup
 	var progressMutex sync.Mutex
@@ -122,10 +122,13 @@ func (d Download) Go() error {
 			defer wg.Done()
 
 			d.DownloadSection(i, sections[i][0], sections[i][1])
+
+			// Update progress bar
 			progressMutex.Lock()
 			progress++
 			progressWidthRatio := int((float32(progress) / float32(d.threads)) * float32(progressWidth))
-			fmt.Printf("\r[%s>%s] %dMB", strings.Repeat("=", progressWidthRatio), strings.Repeat(" ", progressWidth-progressWidthRatio), sizeInBytes/1e+6)
+			downloadedInMB := (progress * sectionSize) / 1e+6
+			fmt.Printf("\r[%s>%s] %d/%dMB", strings.Repeat("=", progressWidthRatio), strings.Repeat(" ", progressWidth-progressWidthRatio), downloadedInMB, sizeInMB)
 			progressMutex.Unlock()
 		}(i)
 	}

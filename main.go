@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 )
 
 func main() {
 	// Parse flags and arguments
 	var threads int
-	flag.IntVar(&threads, "t", 10, "number of threads")
+	flag.IntVar(&threads, "t", runtime.NumCPU(), "number of threads")
 	flag.Parse()
 	args := flag.Args()
 

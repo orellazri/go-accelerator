@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"runtime"
-	"time"
 )
 
 func main() {
@@ -22,13 +21,10 @@ func main() {
 	}
 
 	// Initialize download and start
-	var startTime = time.Now()
 	url := args[0]
-	d := Download{url, threads}
+	d := NewDownload(url, threads)
 	err := d.Go()
 	if err != nil {
-		log.Fatalf("ERROR: %v\n", err)
+		log.Fatalf("An error occured: %v\n", err)
 	}
-
-	fmt.Printf("Download took: %.2f seconds\n", time.Since(startTime).Seconds())
 }

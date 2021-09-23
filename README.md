@@ -1,6 +1,8 @@
 # go-accelerator
 
-Download accelerator made in Go.
+Multithreaded download accelerator made in Go.
+
+![Demo](demo.gif)
 
 ## Usage
 
